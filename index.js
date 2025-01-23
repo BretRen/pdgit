@@ -46,7 +46,8 @@ app.post('/api/reg', async (req,res) => {
     //插入
     const result = await collection.insertOne({
         username: username,
-        passsword : safe_password
+        passsword : safe_password,
+        email : email
     })
     //调试
     console.log("插入成功:", result.insertedId);
