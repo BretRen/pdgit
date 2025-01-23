@@ -1,8 +1,12 @@
 import { MongoClient } from 'mongodb';
-import { db_name, db_port, db_host } from './config.js';
+import { db_name, db_is_srv, db_username, db_port, db_host, db_passsword} from './config.js';
 
 
-const uri = `mongodb://${db_host}:${db_port}`
+// const uri = `mongodb://${db_name}:${db_passsword}@${db_host}:${db_port}`
+// 根据是否使用 SRV 配置连接字符串
+const uri = db_is_srv
+    ? `mongodb+srv://${db_username}:${db_passsword}@${db_host}/`
+    : `mongodb://${db_username}:${db_passsword}@${db_host}:${db_port}`;
 
 const client = new MongoClient(uri)
 
