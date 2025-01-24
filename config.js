@@ -4,3 +4,7 @@ export let db_name = 'pdnode'
 export let db_host = 'pdnode-free.rxzm1.mongodb.net'
 export let db_passsword = "gg20130428"
 export const db_is_srv = true
+export const email = 'gretren@teamside.dev'
+export const email_password = 'gg20130428'
+export const email_host = 'smtppro.zoho.com'
+export const host = '127.0.0.1:3000'
