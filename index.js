@@ -1,13 +1,22 @@
 import express from 'express'; // 默认导入 Express
+import session from 'express-session';
 import connToDb from './db.js';
-import { hashPassword } from "./bcrypt.js"
-import { isValidEmail } from './tool.js';
+import { reg,apiVEamil } from './auth.js'
 const app = express();
 
 
 const db = await connToDb();
 
-
+app.use(
+    session({
+        secret: 'your-32132131321fdsdsefs3rwew-key', // 用于签名 Session ID 的密钥
+        resave: false, // 不强制保存 Session
+        saveUninitialized: false, // 只有在修改内容后才存储 Session
+        cookie: {
+            maxAge: 60000*30, // Session 有效期，单位毫秒（1分钟）
+        },
+    })
+);
 // 中间件解析 JSON 数据
 app.use(express.json());
 
@@ -17,46 +26,9 @@ app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
 
-app.post('/api/reg', async (req,res) => {
-    // 获取 POST 过来的 username 和 password
-    const { username, password , email} = req.body;
+app.post('/api/reg', reg(db))
 
-    //验证
-    if (!username || !password || !email) {
-        res.status(400)
-        res.json({
-            "error":'username or password or email are required',
-            "code":400
-        });
-        return;
-    }else if(!isValidEmail(email)) {
-        res.status(400)
-        res.json({
-            "error":'email are required',
-            "code":400
-        });
-        return;
-    }
-
-
-    // 选择集合
-    const collection = db.collection('users');
-    //哈希密码
-    const safe_password = await hashPassword(password)
-    //插入
-    const result = await collection.insertOne({
-        username: username,
-        passsword : safe_password,
-        email : email
-    })
-    //调试
-    console.log("插入成功:", result.insertedId);
-    console.log(safe_password);
-
-    // 返回
-    res.status(200)
-    res.json({ data: req.body, code: 200});
-})
+app.get('/api/email/v/:token/', apiVEamil(db))
 
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
