@@ -1,11 +1,25 @@
 import express from 'express'; // 默认导入 Express
 import session from 'express-session';
+import rateLimit from 'express-rate-limit';
 import connToDb from './db.js';
 import { reg,apiVEamil } from './auth.js'
 const app = express();
 
 
 const db = await connToDb();
+
+// 配置速率限制器
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 分钟
+    max: 100, // 每个 IP 每 15 分钟最多 100 次请求
+    message: {
+        error: "Too many requests, please try again later.",
+        code: 429,
+    },
+});
+
+// 将速率限制器应用于所有请求
+app.use(limiter);
 
 app.use(
     session({
