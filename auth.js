@@ -1,8 +1,8 @@
 import { hashPassword, verifyPassword } from "./bcrypt.js"
 import { isValidEmail } from './tool.js';
 import { sendEmail } from './email.js';
-import { generateRandomString } from "./tool.js"
-import { host } from "./config.js";
+import { generateRandomString,verifyToken,generateToken } from "./tool.js"
+import { email, host } from "./config.js";
 import { config } from "dotenv";
 import { hash } from "bcrypt";
 export function reg(db)
@@ -174,11 +174,15 @@ export function login(db)
                 code: 401
             })
         }
-        req.status(200).json({
+        const token = generateToken({username: username,email:user.email})
+
+        console.log(verifyToken(token))
+
+        res.status(200).json({
             message: "Login success",
             code: 200,
             user: user,
-            token: "没做好" // 请自行生成并返回 token
+            token: token // 请自行生成并返回 token
         })
         console.log(user)
     }

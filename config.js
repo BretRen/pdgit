@@ -18,3 +18,5 @@ export const email_host = process.env.emailHost;
 
 // server configuration
 export const host = process.env.host;
+
+export const secretKey = process.env.secretKey;
