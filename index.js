@@ -2,8 +2,10 @@ import express from 'express'; // 默认导入 Express
 import session from 'express-session';
 import rateLimit from 'express-rate-limit';
 import connToDb from './db.js';
-import { reg,apiVEamil,login } from './auth.js'
+import { reg,apiVEamil,login,loginAuth } from './auth.js'
 import morgan from 'morgan';
+import { userInfo} from './users.js'
+
 const app = express();
 
 
@@ -12,7 +14,7 @@ const db = await connToDb();
 // 配置速率限制器
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 分钟
-    max: 100, // 每个 IP 每 15 分钟最多 100 次请求
+    max: 50, // 每个 IP 每 15 分钟最多 100 次请求
     message: {
         error: "Too many requests, please try again later.",
         code: 429,
@@ -55,6 +57,8 @@ app.post('/api/reg/', reg(db))
 app.get('/api/email/v/:token/', apiVEamil(db))
 
 app.post('/api/login/', login(db))
+
+app.get('/api/user/info/', loginAuth(db),userInfo(db))
 
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');

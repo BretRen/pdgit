@@ -1,7 +1,6 @@
 import { hashPassword, verifyPassword } from "./bcrypt.js"
-import { isValidEmail } from './tool.js';
 import { sendEmail } from './email.js';
-import { generateRandomString,verifyToken,generateToken } from "./tool.js"
+import { generateRandomString,verifyToken,generateToken,isValidEmail } from "./tool.js"
 import { email, host } from "./config.js";
 import { config } from "dotenv";
 import { hash } from "bcrypt";
@@ -185,5 +184,56 @@ export function login(db)
             token: token // 请自行生成并返回 token
         })
         console.log(user)
+    }
+}
+
+export function loginAuth(db){
+    return async (req,res,next) => {
+        console.log("中间件login")
+        const auth = req.headers["authorization"];
+        console.log(auth);
+        // console.log(req.headers);  // 打印所有请求头部
+        if (!auth){
+            return res.status(401).json({
+                error: "Token required",
+                code: 401
+            })
+        }
+        const token = auth.split(" ")[1]?.trim();
+        console.log("提取的 token:", token);
+
+        let vtoken
+
+        try {
+            vtoken = verifyToken(token)
+        } catch (error) {
+            return res.status(500).json({ error:"Error verifying token"})
+        }
+        console.log(vtoken)
+
+        if (!token){
+            return res.status(401).json({
+                error: "Invalid token",
+                code: 401
+            })
+        }
+
+        const collection = db.collection("users")
+        const user = await collection.findOne({username: vtoken.username})
+
+        console.log(user)
+
+        if (!user) {
+            return res.status(401).json({
+                error: "Invalid token",
+                code: 401
+            })
+        }
+
+        req.user = user
+        req.token = token  // 请自行将 token 保存在 req 上，以便后续使用。
+
+        next()
+
     }
 }
