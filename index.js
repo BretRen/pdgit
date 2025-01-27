@@ -2,7 +2,8 @@ import express from 'express'; // 默认导入 Express
 import session from 'express-session';
 import rateLimit from 'express-rate-limit';
 import connToDb from './db.js';
-import { reg,apiVEamil } from './auth.js'
+import { reg,apiVEamil,login } from './auth.js'
+import morgan from 'morgan';
 const app = express();
 
 
@@ -20,7 +21,7 @@ const limiter = rateLimit({
 
 // 将速率限制器应用于所有请求
 app.use(limiter);
-
+app.use(morgan('dev'));
 app.use(
     session({
         secret: 'your-32132131321fdsdsefs3rwew-key', // 用于签名 Session ID 的密钥
@@ -37,12 +38,15 @@ app.use(express.json());
 // 中间件解析 URL 编码数据
 app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
+    res.status(200)
     res.send('Hello, World!');
 });
 
-app.post('/api/reg', reg(db))
+app.post('/api/reg/', reg(db))
 
 app.get('/api/email/v/:token/', apiVEamil(db))
+
+app.post('/api/login/', login(db))
 
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');

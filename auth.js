@@ -3,6 +3,7 @@ import { isValidEmail } from './tool.js';
 import { sendEmail } from './email.js';
 import { generateRandomString } from "./tool.js"
 import { host } from "./config.js";
+import { config } from "dotenv";
 export function reg(db)
 {
     return async (req,res) => {
@@ -98,5 +99,41 @@ export function apiVEamil(db)
             "code":200,
             "token": token
         })
+    }
+}
+
+
+
+export function login(db)
+{
+    return async (req, res) => {
+        console.log("--------登录请求--------\n正在获取参数")
+        const password = req.body.password
+        const username = req.body.username
+
+        console.log("开始验证")
+        if (!username ||!password) {
+            console.log("参数错误")
+            return res.status(400).json({
+                error: "Not have username or password",
+                code: 400
+            })
+        }
+
+
+        console.log(username, password)
+        console.log("查询数据库中……")
+        const collection = db.collection('users')
+        const hash_password = await hashPassword(password)
+        const user = await collection.findOne({ username: username, password: hash_password })
+
+        if (!user) {
+            console.log("账号或密码不正确")
+            return res.status(401).json({
+                error: "Invalid username or password",
+                code: 401
+            })
+        }
+        console.log(user)
     }
 }
