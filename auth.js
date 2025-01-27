@@ -147,17 +147,39 @@ export function login(db)
         console.log("查询数据库中……")
         const collection = db.collection('users')
         const user = await collection.findOne({ username: username})
+        if (!user)
+            {
+                console.log("账号不存在")
+                return res.status(401).json({
+                    error: "Invalid username",
+                    code: 401
+                })  // 请自行返回 401 状态码并返回相关信息
+            }
+        const isTruePassword = await verifyPassword(password, user.password)
 
-        const isTruePassword = await verifyPassword(user.password, password)
 
-        if (!user) {
+
+        if (!isTruePassword) {
             console.log("账号或密码不正确")
-            console.log(hash_password)
+            console.log(username, password,isTruePassword,user.password, await hashPassword(password))
             return res.status(401).json({
                 error: "Invalid username or password",
                 code: 401
             })
         }
+        if (!user.isActive) {
+            console.log("邮箱未验证")
+            return res.status(401).json({
+                error: "Email not verified",
+                code: 401
+            })
+        }
+        req.status(200).json({
+            message: "Login success",
+            code: 200,
+            user: user,
+            token: "没做好" // 请自行生成并返回 token
+        })
         console.log(user)
     }
 }

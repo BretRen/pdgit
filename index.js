@@ -19,6 +19,8 @@ const limiter = rateLimit({
     },
 });
 
+// 启用 Trust Proxy
+app.set('trust proxy', true);
 // 将速率限制器应用于所有请求
 app.use(limiter);
 app.use(morgan('dev'));
