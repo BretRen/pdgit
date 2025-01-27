@@ -1,9 +1,10 @@
-import { hashPassword } from "./bcrypt.js"
+import { hashPassword, verifyPassword } from "./bcrypt.js"
 import { isValidEmail } from './tool.js';
 import { sendEmail } from './email.js';
 import { generateRandomString } from "./tool.js"
 import { host } from "./config.js";
 import { config } from "dotenv";
+import { hash } from "bcrypt";
 export function reg(db)
 {
     return async (req,res) => {
@@ -30,6 +31,27 @@ export function reg(db)
 
     // 选择集合
     const collection = db.collection('users');
+
+    //验证是否有一样的用户名和邮箱
+    const user = await collection.findOne({$or: [{username: username}, {email: email}]})
+    if (user) {
+        res.status(400)
+        res.json({
+            "error":'username or email already exists',
+            "code":400
+        });
+        return;
+    }
+
+    // 开始插入数据
+    // 注意：此处并未对 password 进行安全检查，在实际应用中需要对 password 进行严格的检查
+    // 如：检查 password 长度，是否包含特殊字符等。
+    // 请自行在应用中添加此项检查。
+
+    // 请注意：此处使用了 bcrypt.js 进行 password 哈希，请在您的应用中使用更安全的 password hashing 库。
+    // 如：bcryptjs 或 argon2。
+    // 请自行在应用中添加此项功能。
+
     //哈希密码
     const safe_password = await hashPassword(password)
     //插入
@@ -124,11 +146,13 @@ export function login(db)
         console.log(username, password)
         console.log("查询数据库中……")
         const collection = db.collection('users')
-        const hash_password = await hashPassword(password)
-        const user = await collection.findOne({ username: username, password: hash_password })
+        const user = await collection.findOne({ username: username})
+
+        const isTruePassword = await verifyPassword(user.password, password)
 
         if (!user) {
             console.log("账号或密码不正确")
+            console.log(hash_password)
             return res.status(401).json({
                 error: "Invalid username or password",
                 code: 401
