@@ -17,10 +17,16 @@ const limiter = rateLimit({
         error: "Too many requests, please try again later.",
         code: 429,
     },
+    trustProxy: process.env.NODE_ENV === 'production',
 });
 
 // 启用 Trust Proxy
-app.set('trust proxy', true);
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', true);
+} else {
+    app.set('trust proxy', false);
+}
+
 // 将速率限制器应用于所有请求
 app.use(limiter);
 app.use(morgan('dev'));
